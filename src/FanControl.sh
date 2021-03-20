@@ -9,6 +9,10 @@ MIN_TEMP=50 # Minimum temperature in Celsius, below which we turn off the fan
 GPIO_FOLDER="/sys/class/gpio"
 FAN_GPIO_FOLDER=${GPIO_FOLDER}/gpio${FAN_PIN}
 
+### VARIABLES ###
+
+FAN_ON=0
+
 ### FUNCTIONS ###
 
 # SIGINT handler
@@ -54,10 +58,12 @@ do
     TEMP=$(($TEMP/1000))
     
     # Turn on/off the fan if needed
-    if [ "$TEMP" -gt "$MAX_TEMP" ]; then
+    if [ $FAN_ON -eq 0 ] && [ "$TEMP" -gt "$MAX_TEMP" ]; then
         echo "1" > ${FAN_GPIO_FOLDER}/value # Fan ON
-    elif [ "$TEMP" -lt "$MIN_TEMP" ]; then
+	FAN_ON=1
+    elif [ $FAN_ON -eq 1 ] && [ "$TEMP" -lt "$MIN_TEMP" ]; then
         echo "0" > ${FAN_GPIO_FOLDER}/value # Fan OFF
+	FAN_ON=0
     fi
     
     sleep 30
